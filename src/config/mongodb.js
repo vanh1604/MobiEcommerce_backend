@@ -6,5 +6,4 @@ const connectDB = async () => {
   });
   await mongoose.connect(`mongodb+srv://vietanhscout:vanh1604@cluster0.arqkh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`);
 };
-
 export default connectDB;
