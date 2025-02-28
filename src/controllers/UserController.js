@@ -1,5 +1,6 @@
 import validator from "validator";
 import userModel from "../models/UserModel.js";
+import bcrypt from "bcrypt";
 const createUser = async (req, res) => {
   try {
     const { name, email, password, phone, confirmPassword } = req.body;
