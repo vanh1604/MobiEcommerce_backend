@@ -1,11 +1,15 @@
 import validator from "validator";
 import userModel from "../models/UserModel.js";
 import bcrypt from "bcrypt";
+import {
+  generalAccessToken,
+  generalRefreshToken,
+} from "../services/JwtService.js";
 const createUser = async (req, res) => {
   try {
     const { name, email, password, phone, confirmPassword } = req.body;
     console.log(name);
-    
+
     if (!name || !email || !password || !phone) {
       return res
         .status(400)
@@ -17,11 +21,9 @@ const createUser = async (req, res) => {
     }
     const exists = await userModel.findOne({ email });
     if (exists) {
-      return res
-        .status(400)
-        .json({
-          message: "Tai khoan da ton tai, vui long dang ky tai khoan khac",
-        });
+      return res.status(400).json({
+        message: "Tai khoan da ton tai, vui long dang ky tai khoan khac",
+      });
     }
 
     //validating email format & strong password
@@ -64,9 +66,61 @@ const loginUser = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-    return res.status(200).json({ message: "Login successful", user });
+    const accessToken = await generalAccessToken({
+      id: user._id,
+      isAdmin: user.isAdmin,
+    });
+    const refreshToken = await generalRefreshToken({
+      id: user._id,
+      isAdmin: user.isAdmin,
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Login successful", accessToken, refreshToken });
   } catch (error) {
+    console.log(error);
+
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
-export { createUser,loginUser };
+
+const updateUser = async (req, res) => {
+  try {
+    // Lấy userId từ params
+    const { id: userId } = req.params;
+    console.log("User ID from params:", userId); // Debug
+
+    // Lấy dữ liệu từ body
+    const data = req.body;
+    console.log("Request body:", data); // Debug dữ liệu gửi lên
+
+    // Kiểm tra userId
+    if (!userId) {
+      return res.status(400).json({ message: "User id is required" });
+    }
+
+    // Tìm user
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Cập nhật user
+    const updatedUser = await userModel.findByIdAndUpdate(userId, data, {
+      new: true, // Trả về tài liệu đã cập nhật
+      runValidators: true, // Đảm bảo schema validation (tùy chọn)
+    });
+    console.log("Updated user:", updatedUser); // Debug kết quả
+
+    return res
+      .status(200)
+      .json({ message: "User updated successfully", user: updatedUser });
+  } catch (error) {
+    console.error("Error updating user:", error); // Log lỗi chi tiết
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+};
+export { createUser, loginUser, updateUser };

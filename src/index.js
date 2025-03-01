@@ -7,12 +7,11 @@ import "dotenv/config";
 
 const port = process.env.PORT || 5000;
 app.get("/", (req, res) => {
-    res.send("Hello World!");
-})
+  res.send("Hello World!");
+});
 app.use(express.json());
-app.use('/api/user', userRouter);
+app.use("/api/user", userRouter);
 connectDB();
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-
