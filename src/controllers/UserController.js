@@ -123,4 +123,53 @@ const updateUser = async (req, res) => {
       .json({ message: "Internal Server Error", error: error.message });
   }
 };
-export { createUser, loginUser, updateUser };
+const deleteUser = async (req, res) => {
+  try {
+    // Lấy userId từ params
+    const { id: userId } = req.params;
+
+    console.log("User ID from params:", userId); // Debug
+    const user = await userModel.findByIdAndDelete(userId);
+    // Kiểm tra userId
+    if (!userId) {
+      return res.status(400).json({ message: "User id is required" });
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error updating user:", error); // Log lỗi chi tiết
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+};
+
+const getAllUser = async (req, res) => {
+  try {
+    const users = await userModel.find();
+    return res
+      .status(200)
+      .json({ message: "Users retrieved successfully", users });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const getUserDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await userModel.findById(id);
+    return res
+      .status(200)
+      .json({ message: "User retrieved successfully", user });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+export { createUser, loginUser, updateUser, deleteUser, getAllUser,getUserDetails };
