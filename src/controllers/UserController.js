@@ -1,9 +1,13 @@
 import validator from "validator";
 import userModel from "../models/UserModel.js";
 import bcrypt from "bcrypt";
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
+
 import {
   generalAccessToken,
   generalRefreshToken,
+  refreshTokenJwt,
 } from "../services/JwtService.js";
 const createUser = async (req, res) => {
   try {
@@ -172,4 +176,27 @@ const getUserDetails = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
-export { createUser, loginUser, updateUser, deleteUser, getAllUser,getUserDetails };
+
+const refreshToken = async (req, res) => {
+  try {
+    const token = req.headers.token?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json("Token is required!");
+    }
+    const decoded = await refreshTokenJwt(token);
+    return res.status(200).json(decoded);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+export {
+  createUser,
+  loginUser,
+  updateUser,
+  deleteUser,
+  getAllUser,
+  getUserDetails,
+
+  refreshToken,
+};

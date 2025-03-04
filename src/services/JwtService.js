@@ -7,7 +7,7 @@ const generalAccessToken = async (payload) => {
       payload,
       process.env.ACCESS_TOKEN_SECRET,
       {
-        expiresIn: "1h",
+        expiresIn: "2h",
       },
       (err, token) => {
         if (err) {
@@ -38,6 +38,25 @@ const generalRefreshToken = async (payload) => {
     );
   });
 };
+const refreshTokenJwt = async (token) => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(
+      token,
+      process.env.REFRESH_TOKEN_SECRET,
+      async (err, decoded) => {
+        if (err) {
+          reject(err);
+        } else {
+          const accessToken = await generalAccessToken({
+            id: decoded.id,
+            isAdmin: decoded.isAdmin,
+          });
+          console.log("accessToken", accessToken);
+          resolve({ status: 200, messasge: "Token is valid", accessToken });
+        }
+      }
+    );
+  });
+};
 
-export { generalRefreshToken, generalAccessToken };
-
+export { generalRefreshToken, generalAccessToken, refreshTokenJwt };
